@@ -56,7 +56,6 @@ router.get("/", (req, res) => {
   });
 });
 
-// Working test endpoints
 router.get("/health", (req, res) => {
   res.json({ status: "OK", message: "Backend is working perfectly!" });
 });
