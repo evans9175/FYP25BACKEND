@@ -96,3 +96,6 @@ Anchor.toml
 .dockerignore
 Dockerfile*
 docker-compose*.yml
+/src/generated/prisma
+
+/src/generated/prisma
