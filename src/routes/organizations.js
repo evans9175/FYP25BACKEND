@@ -6,6 +6,8 @@ const {
   requireRole,
   requirePermission,
 } = require("../middleware/auth");
+const { createOrganization } = require("../utils/entityUtils");
+const prisma = require("../utils/prisma");
 
 const router = express.Router();
 
@@ -355,5 +357,63 @@ router.put(
     }
   }
 );
+
+// Create a new organization
+router.post("/", async (req, res) => {
+  try {
+    const org = await createOrganization(req.body);
+    res.status(201).json(org);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Update an organization
+router.put("/:id", async (req, res) => {
+  try {
+    const org = await prisma.organization.update({
+      where: { id: parseInt(req.params.id) },
+      data: req.body,
+    });
+    res.json(org);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Delete an organization
+router.delete("/:id", async (req, res) => {
+  try {
+    await prisma.organization.delete({
+      where: { id: parseInt(req.params.id) },
+    });
+    res.status(204).end();
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Get all organizations
+router.get("/", async (req, res) => {
+  try {
+    const orgs = await prisma.organization.findMany();
+    res.json(orgs);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get a specific organization by ID
+router.get("/:id", async (req, res) => {
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { id: parseInt(req.params.id) },
+    });
+    if (!org) return res.status(404).json({ error: "Organization not found" });
+    res.json(org);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 module.exports = router;

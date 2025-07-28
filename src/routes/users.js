@@ -1,13 +1,22 @@
 // routes/users.js
 const express = require("express");
+const { createUser } = require("../utils/entityUtils");
 const { supabase, supabaseAdmin } = require("../lib/supabase");
 const {
   authenticateUser,
   requireRole,
   requirePermission,
 } = require("../middleware/auth");
+const { get } = require("http");
+const prisma = require("../utils/prisma");
 
 const router = express.Router();
+
+// Add this handler for GET /api/users/
+router.get("/", async (req, res) => {
+  const user = await createUser("harrieteffah@gmail.com", "Harry Effah");
+  res.json(user);
+});
 
 // Get current user profile
 router.get("/profile", authenticateUser, async (req, res) => {
@@ -150,6 +159,41 @@ router.post(
   }
 );
 
+// Create a new user
+router.post("/", async (req, res) => {
+  try {
+    const user = await createUser(req.body);
+    res.status(201).json(user);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Update a user
+router.put("/:id", async (req, res) => {
+  try {
+    const user = await prisma.user.update({
+      where: { id: parseInt(req.params.id) },
+      data: req.body,
+    });
+    res.json(user);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Delete a user
+router.delete("/:id", async (req, res) => {
+  try {
+    await prisma.user.delete({
+      where: { id: parseInt(req.params.id) },
+    });
+    res.status(204).end();
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 // Get user permissions
 router.get("/permissions", authenticateUser, async (req, res) => {
   try {
@@ -163,6 +207,29 @@ router.get("/permissions", authenticateUser, async (req, res) => {
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+});
+
+// Get all users
+router.get("/", async (req, res) => {
+  try {
+    const users = await prisma.user.findMany();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get a specific user by ID
+router.get("/:id", async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: parseInt(req.params.id) },
+    });
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 

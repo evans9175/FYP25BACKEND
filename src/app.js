@@ -25,7 +25,7 @@ app.use("/api/authroute", authrouteRoutes);
 
 // Your existing endpoints
 app.get("/", (req, res) => {
-  res.json({ message: "Server working!" });
+  res.json({ message: "Hello, World!" });
 });
 
 app.get("/health", (req, res) => {
